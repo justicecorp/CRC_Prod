@@ -1,5 +1,3 @@
-# create and upload data to S3 here
-
 locals {
   htmlname                 = "index_${var.WebCodeVersion}.html"
   jsname                   = "index_${var.WebCodeVersion}.js"
@@ -8,12 +6,15 @@ locals {
   cachingdisabledpolicyid  = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
 }
 
+# Generate a random 64 char string to use in the referer the string that CF passes to its origin
 resource "random_password" "refererstring" {
   length  = 64
   special = false
 }
 
-# All the depends_on statements below ultimately fixed my issue of not being able to create a bucket policy. 
+
+# All the depends_on statements below ultimately fixed my issue of not being able to create a bucket policy. It was trying to create it before the bucket was created
+# Create the S3 bucket that will host the static site
 resource "aws_s3_bucket" "bucket" {
   bucket = var.BucketName
   tags = {
@@ -21,6 +22,7 @@ resource "aws_s3_bucket" "bucket" {
   }
 }
 
+# Configure the S3 bucket to not block public access
 resource "aws_s3_bucket_public_access_block" "bucket" {
   bucket                  = aws_s3_bucket.bucket.id
   block_public_acls       = false
@@ -30,12 +32,14 @@ resource "aws_s3_bucket_public_access_block" "bucket" {
   depends_on              = [aws_s3_bucket.bucket]
 }
 
+# Configure the bucket with a policy that only allows traffic containing a specific referer header through (ie. only CF can get data from the bucket)
 resource "aws_s3_bucket_policy" "bucket" {
   bucket     = aws_s3_bucket.bucket.id
   policy     = data.aws_iam_policy_document.s3publicaccess.json
   depends_on = [aws_s3_bucket_public_access_block.bucket]
 }
 
+# Upload the JS file to the bucket. Use the Templatefile() function to dynamically update the address of the APIGW in the file.
 resource "aws_s3_object" "javascript" {
   key          = local.jsname
   bucket       = aws_s3_bucket.bucket.id
@@ -45,6 +49,7 @@ resource "aws_s3_object" "javascript" {
   
 }
 
+# Upload the HTML file to the bucket. Use the Templatefile() function to dynamically update the name of the JS File to import. 
 resource "aws_s3_object" "html" {
   key     = local.htmlname
   bucket  = aws_s3_bucket.bucket.id
@@ -54,6 +59,7 @@ resource "aws_s3_object" "html" {
   depends_on   = [aws_s3_bucket_policy.bucket]
 }
 
+# Configure the bucket for Static Hosting
 resource "aws_s3_bucket_website_configuration" "bucket" {
   bucket = aws_s3_bucket.bucket.id
   index_document {
@@ -66,8 +72,8 @@ resource "aws_s3_bucket_website_configuration" "bucket" {
   depends_on = [aws_s3_object.html, aws_s3_object.javascript]
 }
 
-### CERT MUST BE BUILT IN US-EAST-1 to use with CF
-#create a certificate in an existing r53 hosted zone
+# CERT MUST BE BUILT IN US-EAST-1 to use with CF
+# Create a certificate for the alternative site name
 resource "aws_acm_certificate" "certificate" {
   provider          = aws.east1
   domain_name       = "${var.WebSiteHostName}.${var.HostedZone}"
@@ -108,6 +114,7 @@ resource "aws_cloudfront_distribution" "distro" {
   origin {
     origin_id   = aws_s3_bucket_website_configuration.bucket.website_endpoint
     domain_name = aws_s3_bucket_website_configuration.bucket.website_endpoint
+    # This site Goes over a way to only allow access to s3 static site through CF using the referer header: https://repost.aws/knowledge-center/cloudfront-serve-static-website
     custom_header {
       name  = "Referer"
       value = random_password.refererstring.result
@@ -118,8 +125,7 @@ resource "aws_cloudfront_distribution" "distro" {
       https_port             = 443
       origin_ssl_protocols   = ["TLSv1.2"]
     }
-    # Add the referer header here
-    #custom_header {}
+
   }
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
@@ -145,10 +151,6 @@ resource "aws_cloudfront_distribution" "distro" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
 }
-# create cloudfront distro
-#@#@#@#@# Goes over a way to only allow access to s3 static site through CF: https://repost.aws/knowledge-center/cloudfront-serve-static-website
-## uses a referer header. Cloudfront always sends its request to the site with custom header that has a secret key. S3 only accepts requests with that header.
-# define the ami of the cert as a variable
 
 resource "aws_route53_record" "resume1" {
   zone_id = data.aws_route53_zone.zone.zone_id
