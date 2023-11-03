@@ -39,9 +39,10 @@ resource "aws_s3_bucket_policy" "bucket" {
 resource "aws_s3_object" "javascript" {
   key          = local.jsname
   bucket       = aws_s3_bucket.bucket.id
-  content      = templatefile("${path.module}/../web-fe/index.js.tftpl", { APIGWURL = aws_api_gateway_stage.lambdaAPI.invoke_url })
+  content      = templatefile("${path.module}/../web-fe/index.js.tftpl", { APIGWURL = data.terraform_remote_state.beoutput.outputs.APIGW-invokeurl }) #@# HERE
   content_type = "text/javascript"
   depends_on   = [aws_s3_bucket_policy.bucket]
+  
 }
 
 resource "aws_s3_object" "html" {
