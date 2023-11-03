@@ -15,7 +15,7 @@ terraform {
 
   backend "s3" {
     bucket = "tf-tutorial-state"
-    key    = "githubactions/tfstate/backendstate"
+    key    = "githubactions/tfstate/frontendstate"
     region = "us-east-1"
     dynamodb_table = "terraform-state-lock"
   }
