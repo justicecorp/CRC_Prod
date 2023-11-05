@@ -24,12 +24,12 @@ terraform {
 
 # Shouldn't specify profile if it is run through GitHub Actions
 provider "aws" {
-  region  = "us-east-2"
+  region = "us-east-2"
   #profile = "SSOAdminDev"
 }
 
 provider "aws" {
-  alias   = "east1"
-  region  = "us-east-1"
+  alias  = "east1"
+  region = "us-east-1"
   #profile = "SSOAdminDev"
 }
