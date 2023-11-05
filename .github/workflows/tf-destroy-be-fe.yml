@@ -58,7 +58,7 @@ jobs:
       - name: Terraform Destroy FE
         id: destroy-fe
         working-directory: ./tf-fe
-        run: terraform -auto-approve
+        run: terraform destroy -auto-approve
   
       - name: Initialize terraform BE
         id: init-be
@@ -75,6 +75,6 @@ jobs:
       - name: Terraform Destroy BE
         id: destroy-be
         working-directory: ./tf-be
-        run: terraform -auto-approve
+        run: terraform destroy -auto-approve
 
       
