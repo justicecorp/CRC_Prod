@@ -18,6 +18,7 @@ env:
   TF_STATE_KEY_BE: ${{ vars.TF_STATE_KEY_BE }}
   TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+  AWS_REGION : us-east-1 #Change to reflect your Region
   
 
 jobs:
@@ -33,6 +34,14 @@ jobs:
     steps:
       - name: Checkout the repository to the runner
         uses: actions/checkout@v3
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::868381110893:role/GithubActions-ResumeSite-TFDeploy #change to reflect your IAM role’s ARN
+          # role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+            # Don't understand why I need to specify the region for authentication
 
       - name: Setup Terraform with specified version on the runner
         uses: hashicorp/setup-terraform@v2
