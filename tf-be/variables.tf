@@ -36,7 +36,7 @@ variable "LambdaName" {
 
 # The runtime of the Lambda Function that will be created
 variable "LambdaRuntime" {
-  type = string
+  type    = string
   default = "python3.11"
 }
 

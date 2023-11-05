@@ -200,7 +200,7 @@ resource "aws_lambda_function" "sitecounterlambda" {
   function_name    = var.LambdaName
   role             = aws_iam_role.Lambda-DDBTable-Role.arn
   filename         = data.archive_file.lambdaZip.output_path
-  handler          = "${var.LambdaHandler}"
+  handler          = var.LambdaHandler
   source_code_hash = data.archive_file.lambdaZip.output_base64sha256
   runtime          = var.LambdaRuntime
   environment {
@@ -214,7 +214,7 @@ resource "aws_lambda_function" "sitecounterlambda" {
       ddbuniquediff         = var.DDBTimestampUniqueDiffDays
     }
   }
-  depends_on = [ aws_iam_role_policy_attachment.CWPolicyAttachment, aws_iam_role_policy_attachment.DDBPolicyAttachment ]
+  depends_on = [aws_iam_role_policy_attachment.CWPolicyAttachment, aws_iam_role_policy_attachment.DDBPolicyAttachment]
 }
 
 # Create API Gateway with Lambda Proxy Integration enabled that will point to my lambda

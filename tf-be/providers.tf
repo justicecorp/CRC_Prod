@@ -13,21 +13,23 @@ terraform {
     }
   }
 
+  # Backend is specified in the init command so it can be dynamic. Using Github Repository variables to specify backend
   backend "s3" {
-    bucket = "tf-tutorial-state"
-    key    = "githubactions/tfstate/backendstate"
-    region = "us-east-1"
-    dynamodb_table = "terraform-state-lock"
+    #bucket         = "tf-tutorial-state"
+    #key            = "githubactions/tfstate/backendstate"
+    #region         = "us-east-1"
+    #dynamodb_table = "terraform-state-lock"
   }
 }
 
+# Shouldn't specify profile if it is run through GitHub Actions
 provider "aws" {
   region  = "us-east-2"
-  profile = "SSOAdminDev"
+  #profile = "SSOAdminDev"
 }
 
 provider "aws" {
   alias   = "east1"
   region  = "us-east-1"
-  profile = "SSOAdminDev"
+  #profile = "SSOAdminDev"
 }

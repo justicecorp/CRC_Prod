@@ -46,7 +46,7 @@ resource "aws_s3_object" "javascript" {
   content      = templatefile("${path.module}/../web-fe/index.js.tftpl", { APIGWURL = data.terraform_remote_state.beoutput.outputs.APIGW-invokeurl }) #@# HERE
   content_type = "text/javascript"
   depends_on   = [aws_s3_bucket_policy.bucket]
-  
+
 }
 
 # Upload the HTML file to the bucket. Use the Templatefile() function to dynamically update the name of the JS File to import. 
