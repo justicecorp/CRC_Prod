@@ -58,6 +58,10 @@ jobs:
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY_BE" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
              # original: terraform init -backend-config="bucket=$BUCKET_TF_STATE"
       
+      - name: Terraform format
+        id: fmt
+        run: terraform fmt
+      
       - name: Terraform validate
         id: validate
         run: terraform validate
