@@ -26,11 +26,3 @@ data "aws_route53_zone" "zone" {
   private_zone = false
 }
 
-data "terraform_remote_state" "beoutput" {
-  backend = "s3"
-  config = {
-    bucket = "tf-tutorial-state"
-    key    = var.BackendState
-    region = "us-east-1"
-  }
-}

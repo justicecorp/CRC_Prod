@@ -1,0 +1,54 @@
+name: "MANUAL Terraform Destroy automated workflow"
+
+on: workflow_dispatch
+
+env: 
+  TF_LOG: INFO
+  TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+  TF_STATE_KEY_MAIN: ${{ vars.TF_STATE_KEY_MAIN }}
+  TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
+  TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+  AWS_REGION : us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
+  
+# Permission can be added at job level or workflow level    
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+jobs:
+  terraform:
+    name: "TF Infrastrcture Destroy BE and FE"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./tf-main
+        
+
+    steps:
+      - name: Checkout the repository to the runner
+        uses: actions/checkout@v3
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::868381110893:role/GithubActions-ResumeSite-TFDeploy #change to reflect your IAM role’s ARN
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Setup Terraform with specified version on the runner
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.1
+
+      - name: Terraform Init Main
+        id: init
+        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY_MAIN" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
+      
+      - name: Terraform Validate Main
+        id: validate
+        run: terraform validate
+
+      - name: Terraform Destroy Main
+        id: destroy
+        run: terraform destroy -auto-approve
+      

@@ -25,6 +25,6 @@ variable "WebSiteHostName" {
   type = string
 }
 
-variable "BackendState" {
-  type = string
+variable "APIGWInvokeURL" {
+  type = string 
 }

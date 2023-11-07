@@ -14,20 +14,21 @@ terraform {
   }
 
   backend "s3" {
-    #bucket         = "tf-tutorial-state"
-    #key            = "githubactions/tfstate/frontendstate"
-    #region         = "us-east-1"
-    #dynamodb_table = "terraform-state-lock"
+    bucket         = "tf-tutorial-state"
+    key            = "githubactions/tfstate/combinedprojstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-state-lock"
   }
 }
 
 provider "aws" {
-  region  = "us-east-2"
-  #profile = "SSOAdminDev"
+  alias   = "east2"
+  region  = "us-west-1"
+  profile = "SSOAdminDev"
 }
 
 provider "aws" {
   alias   = "east1"
   region  = "us-east-1"
-  #profile = "SSOAdminDev"
+  profile = "SSOAdminDev"
 }

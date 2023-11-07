@@ -1,3 +1,14 @@
+terraform {
+  # specifies the required provider for this terraform module
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.21.0"
+      configuration_aliases = [ aws.src]
+    }
+  }
+}
+
 locals {
   htmlname                 = "index_${var.WebCodeVersion}.html"
   jsname                   = "index_${var.WebCodeVersion}.js"
@@ -43,7 +54,7 @@ resource "aws_s3_bucket_policy" "bucket" {
 resource "aws_s3_object" "javascript" {
   key          = local.jsname
   bucket       = aws_s3_bucket.bucket.id
-  content      = templatefile("${path.module}/../web-fe/index.js.tftpl", { APIGWURL = data.terraform_remote_state.beoutput.outputs.APIGW-invokeurl }) #@# HERE
+  content      = templatefile("${path.module}/../web-fe/index.js.tftpl", { APIGWURL = var.APIGWInvokeURL }) #@# HERE
   content_type = "text/javascript"
   depends_on   = [aws_s3_bucket_policy.bucket]
 
@@ -75,7 +86,7 @@ resource "aws_s3_bucket_website_configuration" "bucket" {
 # CERT MUST BE BUILT IN US-EAST-1 to use with CF
 # Create a certificate for the alternative site name
 resource "aws_acm_certificate" "certificate" {
-  provider          = aws.east1
+  provider          = aws.src
   domain_name       = "${var.WebSiteHostName}.${var.HostedZone}"
   validation_method = "DNS"
   lifecycle {
@@ -103,7 +114,7 @@ resource "aws_route53_record" "certificate" {
 
 ## not sure if provider is necessary here
 resource "aws_acm_certificate_validation" "certificate" {
-  provider                = aws.east1
+  provider                = aws.src
   certificate_arn         = aws_acm_certificate.certificate.arn
   validation_record_fqdns = [for record in aws_route53_record.certificate : record.fqdn]
 }
