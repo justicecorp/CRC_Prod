@@ -13,11 +13,12 @@ terraform {
     }
   }
 
+  # must keep this empty because these values are passed into the init command using Github vars in the Github workflows
   backend "s3" {
-    bucket         = "tf-tutorial-state"
-    key            = "githubactions/tfstate/combinedprojstate"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-state-lock"
+    #bucket         = "tf-tutorial-state"
+    #key            = "githubactions/tfstate/combinedprojstate"
+    #region         = "us-east-1"
+    #dynamodb_table = "terraform-state-lock"
   }
 }
 
