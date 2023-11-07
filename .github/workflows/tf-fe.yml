@@ -1,11 +1,22 @@
-name: "MANUAL Terraform-Backend automated workflow"
+name: "Terraform-Frontend automated workflow"
 
-on: workflow_dispatch
+on: 
+  push: 
+    branches:
+    - main
+    paths:
+    - tf-fe/**
+  pull_request:
+    branches:
+    - main
+    paths:
+    - tf-fe/**
+  workflow_dispatch:
 
 env: 
   TF_LOG: INFO
   TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
-  TF_STATE_KEY_BE: ${{ vars.TF_STATE_KEY_BE }}
+  TF_STATE_KEY_FE: ${{ vars.TF_STATE_KEY_FE }}
   TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
   AWS_REGION : us-east-1 #Change to reflect your Region
@@ -17,13 +28,13 @@ permissions:
 
 jobs:
   terraform:
-    name: "tf-be infrastructure deployment"
+    name: "tf-fe infrastructure deployment"
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
-        # We keep backend terraform files in the tf-be directory.
-        working-directory: ./tf-be
+        # We keep backend terraform files in the tf-fe directory.
+        working-directory: ./tf-fe
 
     steps:
       - name: Checkout the repository to the runner
@@ -44,19 +55,20 @@ jobs:
       
       - name: Terraform init
         id: init
-        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY_BE" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
+        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY_FE" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
              # original: terraform init -backend-config="bucket=$BUCKET_TF_STATE"
-
+      
       - name: Terraform format
         id: fmt
         run: terraform fmt
-           
+      
       - name: Terraform validate
         id: validate
         run: terraform validate
 
       - name: Terraform plan
         id: plan
+        if: github.event_name == 'pull_request'
         run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
         continue-on-error: true
       
@@ -93,4 +105,5 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
