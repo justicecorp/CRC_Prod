@@ -9,6 +9,9 @@ env:
   TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
   AWS_REGION : us-east-1 #Change to reflect your Region
+  TF_STATUS_BE_PARAM: ${{ vars.TF_STATUS_BE_PARAM }}
+  TF_STATUS_FE_PARAM: ${{ vars.TF_STATUS_FE_PARAM }}
+
   
 # Permission can be added at job level or workflow level    
 permissions:
@@ -35,7 +38,9 @@ jobs:
           role-to-assume: arn:aws:iam::868381110893:role/GithubActions-ResumeSite-TFDeploy #change to reflect your IAM role’s ARN
           # role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ env.AWS_REGION }}
-            # Don't understand why I need to specify the region for authentication
+            # Don't understand why I need to specify the region for authentication 
+              # Its the default region used for calls. This isn't relevant for TF becuase I specify the region in each call. 
+
 
       - name: Setup Terraform with specified version on the runner
         uses: hashicorp/setup-terraform@v2
@@ -93,4 +98,11 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
+        id: apply
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
+
+      - name: Set Status Vars
+        run: |
+          # Write to the parameter store. Create the param if it doesn't exist. If it does exist, update. 
+          aws ssm put-parameter --name "apply-outcome-test2" --value "${{ steps.apply.outcome }}" --type String --overwrite --region us-east-2
+          aws ssm put-parameter --name "${{ env.TF_STATUS_BE_PARAM }}" --value "${{ steps.apply.outputs}}" --type String --overwrite --region "${{ env.AWS_REGION }}"
