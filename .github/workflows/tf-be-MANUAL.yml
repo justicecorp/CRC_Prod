@@ -106,4 +106,4 @@ jobs:
           # Write to the parameter store. Create the param if it doesn't exist. If it does exist, update. 
           aws ssm put-parameter --name "apply-outcome-test2" --value "${{ steps.apply.outcome }}" --type String --overwrite --region us-east-2
           aws ssm put-parameter --name "${{ env.TF_STATUS_BE_PARAM }}" --value "${{ steps.apply.outputs}}" --type String --overwrite --region "${{ env.AWS_REGION }}"
-          echo "${{ steps.apply.outputs}}"
+          echo "${{join(steps.apply.outputs.*, '\n')}}"
