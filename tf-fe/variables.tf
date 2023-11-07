@@ -24,3 +24,7 @@ variable "HostedZone" {
 variable "WebSiteHostName" {
   type = string
 }
+
+variable "BackendState" {
+  type = string
+}

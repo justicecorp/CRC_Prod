@@ -30,7 +30,7 @@ data "terraform_remote_state" "beoutput" {
   backend = "s3"
   config = {
     bucket = "tf-tutorial-state"
-    key    = "githubactions/tfstate/backendstate"
+    key    = var.BackendState
     region = "us-east-1"
   }
 }

@@ -17,6 +17,7 @@ env:
   TF_LOG: INFO
   TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
   TF_STATE_KEY_FE: ${{ vars.TF_STATE_KEY_FE }}
+  TF_STATE_KEY_BE: ${{ vars.TF_STATE_KEY_BE }}
   TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
   AWS_REGION : us-east-1 #Change to reflect your Region
@@ -69,7 +70,7 @@ jobs:
       - name: Terraform plan
         id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
+        run: terraform plan -no-color -input=false -var-file="terraform.tfvars" -var "BackendState=$TF_STATE_KEY_BE"
         continue-on-error: true
       
       - uses: actions/github-script@v6
@@ -106,4 +107,4 @@ jobs:
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var "BackendState=$TF_STATE_KEY_BE"
