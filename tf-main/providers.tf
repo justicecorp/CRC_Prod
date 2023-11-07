@@ -24,11 +24,11 @@ terraform {
 provider "aws" {
   alias   = "east2"
   region  = "us-west-1"
-  profile = "SSOAdminDev"
+  #profile = "SSOAdminDev"
 }
 
 provider "aws" {
   alias   = "east1"
   region  = "us-east-1"
-  profile = "SSOAdminDev"
+  #profile = "SSOAdminDev"
 }
