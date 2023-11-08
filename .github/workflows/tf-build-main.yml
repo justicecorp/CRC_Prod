@@ -1,6 +1,19 @@
-name: "MANUAL Terraform Build automated workflow"
+name: "Terraform Build automated workflow"
 
-on: workflow_dispatch
+on: 
+  push: 
+    branches:
+    - main
+    - Test
+    paths:
+    - '**.tf'
+  pull_request:
+    branches:
+    - main
+    - Test
+    paths:
+    - '**.tf'
+  workflow_dispatch:
 
 env: 
   TF_LOG: INFO
@@ -70,14 +83,43 @@ jobs:
 
       - name: Terraform plan
         id: plan
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
+        if: github.event_name == 'pull_request' && (github.ref_name == 'Test' || github.ref_name == 'main')
         run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
         continue-on-error: true
+      
+      - name: Create Issue with TF plan
+        if: github.event_name == 'pull_request' && (github.ref_name == 'Test' || github.ref_name == 'main')
+        uses: actions/github-script@v6
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
       - name: Terraform Apply
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
+        if: (github.ref_name == 'Test' || github.ref_name == 'main') && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"

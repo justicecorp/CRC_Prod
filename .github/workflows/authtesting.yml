@@ -1,5 +1,5 @@
 # This is a basic workflow to help you get started with Actions
-name: Connect to an AWS role from a GitHub repository
+name: Test AWS authentication depending on the branch that runs it
 
 # Controls when the action will run. Invokes the workflow on push events but only for the main branch
 on: 
@@ -27,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git clone the repository
+        if: github.ref_name == 'Test' || github.ref_name == 'main'
         uses: actions/checkout@v3
 
 
@@ -45,7 +46,10 @@ jobs:
             aws-region: ${{ env.AWS_REGION }}
 
       - name: Sts GetCallerIdentity
+        if: github.ref_name == 'Test' || github.ref_name == 'main'
         run: |
           aws sts get-caller-identity
-          echo "${{ github.ref }}"
-          echo "${{ github.ref_name }}"
+          echo "Github.ref = ${{ github.ref }}"
+          echo "Github.ref_name = ${{ github.ref_name }}"
+          echo "Github.event_name = ${{ github.event_name }}"
+          echo "Github.event = ${{join(github.event.*, '\n')}}"
