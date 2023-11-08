@@ -8,7 +8,8 @@ env:
   TF_STATE_KEY_MAIN: ${{ vars.TF_STATE_KEY_MAIN }}
   TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
-  AWS_REGION : us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
+  AWS_REGION: us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
+  AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
   
 # Permission can be added at job level or workflow level    
 permissions:
@@ -19,6 +20,7 @@ jobs:
   terraform:
     name: "TF Infrastrcture Destroy BE and FE"
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     defaults:
       run:
         shell: bash
@@ -32,7 +34,7 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::868381110893:role/GithubActions-ResumeSite-TFDeploy #change to reflect your IAM role’s ARN
+          role-to-assume: ${{ env.AWS_ROLE_DEV }} 
           aws-region: ${{ env.AWS_REGION }}
           
       - name: Setup Terraform with specified version on the runner

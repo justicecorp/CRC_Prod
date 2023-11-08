@@ -23,7 +23,6 @@ terraform {
 }
 
 provider "aws" {
-  alias   = "east2"
   region  = "us-west-1"
   #profile = "SSOAdminDev"
 }

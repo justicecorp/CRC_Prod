@@ -21,7 +21,7 @@ module "webapp-fe" {
   WebSiteHostName = var.WebSiteHostName
   APIGWInvokeURL  = module.webapp-be.APIGW-invokeurl
   providers = {
-    aws     = aws.east2
-    aws.src = aws.east1
+    aws       = aws
+    aws.east1 = aws.east1
   }
 }

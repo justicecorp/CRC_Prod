@@ -20,7 +20,8 @@ env:
   TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
   AWS_REGION : us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
-  
+  AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
+
 # Permission can be added at job level or workflow level    
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -30,6 +31,7 @@ jobs:
   terraform:
     name: "tf main infrastructure deployment"
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     defaults:
       run:
         shell: bash
@@ -43,7 +45,7 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::868381110893:role/GithubActions-ResumeSite-TFDeploy #change to reflect your IAM role’s ARN
+          role-to-assume: ${{ env.AWS_ROLE_DEV }} #change to reflect your IAM role’s ARN
           aws-region: ${{ env.AWS_REGION }}
            
 

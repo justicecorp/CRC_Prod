@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.21.0"
+    }
+  }
+}
+
 locals {
   roleName      = "lambda-er-${var.DDBTableName}-IAMRole"
   policyNameDDB = "lambda-er-${var.DDBTableName}-IAMPolicy-DDB"
