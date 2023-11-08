@@ -18,6 +18,7 @@ on:
 env:
     AWS_REGION: us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
     AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
+    AWS_ROLE_PROD: ${{vars.AWS_ROLE_PROD}}
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -39,3 +40,5 @@ jobs:
       - name: Sts GetCallerIdentity
         run: |
           aws sts get-caller-identity
+          echo "${{ github.ref }}"
+          echo "${{ github.ref_name }}"
