@@ -27,13 +27,19 @@ resource "random_password" "refererstring" {
   special = false
 }
 
+resource "random_integer" "s3suffix" {
+  min = 3
+  max = 6
+}
+
+
 
 # All the depends_on statements below ultimately fixed my issue of not being able to create a bucket policy. It was trying to create it before the bucket was created
 # Create the S3 bucket that will host the static site
 resource "aws_s3_bucket" "bucket" {
-  bucket = var.BucketName
+  bucket = "${var.BucketName}-${random_integer.s3suffix.id}"
   tags = {
-    Name = var.BucketName
+    Name = "${var.BucketName}-${random_integer.s3suffix.id}"
   }
 }
 
