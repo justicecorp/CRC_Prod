@@ -9,8 +9,13 @@ APIGWName                  = "VisitorCounterAPICombChange"
 DDBDateAttrName            = "UniqueVisitStampCombChange"
 DDBTimestampUniqueDiffDays = 14
 # ONLY LOWERCASE ALPHANUMERIC CHARS and HYPHENS ALLOWED
-BucketName     = "visitorcounter-justicecorpcomb"
+BucketName     = "visitorcounter-justicecorp-gha"
 WebCodeVersion = "3.0"
+
+
+# THIS SHOULD BE PASSED IN THROUGH THE COMMAND LINE
+#WebSiteHostName = "resumerealcomb"
+
+# THIS SHOULD BE PASSED IN THROUGH THE COMMAND LINE
 # Must have the hosted zone pre-created
-WebSiteHostName = "resumerealcomb"
-HostedZone      = "dev.justicecorp.org"
+#HostedZone      = "dev.justicecorp.org"
