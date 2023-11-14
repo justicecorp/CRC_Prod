@@ -210,6 +210,7 @@ resource "aws_lambda_function" "sitecounterlambda" {
   role             = aws_iam_role.Lambda-DDBTable-Role.arn
   filename         = data.archive_file.lambdaZip.output_path
   handler          = var.LambdaHandler
+  # This should take care of updating the lambda fxn if the archive file changes
   source_code_hash = data.archive_file.lambdaZip.output_base64sha256
   runtime          = var.LambdaRuntime
   environment {

@@ -1,29 +1,21 @@
-name: "Terraform Build automated workflow"
+name: "DEV Terraform Build automated workflow"
 
 on: 
   push: 
     branches:
-    - main
     - Test
-    paths:
-    - '**.tf'
-  pull_request:
-    branches:
-    - main
-    - Test
-    paths:
-    - '**.tf'
   workflow_dispatch:
 
 env: 
   TF_LOG: INFO
-  TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
-  TF_STATE_KEY_MAIN: ${{ vars.TF_STATE_KEY_MAIN }}
-  TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE }}
+  TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET_DEV }}
+  TF_STATE_KEY: ${{ vars.TF_STATE_KEY_DEV }}
+  TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE_DEV }}
   TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
   AWS_REGION : us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
   AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
-  AWS_ROLE_PROD: ${{vars.AWS_ROLE_PROD}}
+  AWS_HOSTEDZONE_DEV: ${{vars.AWS_HOSTEDZONE_DEV}}
+  AWS_SITENAME: ${{ vars.AWS_SITENAME }}
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -32,7 +24,7 @@ permissions:
 
 jobs:
   terraform:
-    name: "tf main infrastructure deployment"
+    name: "DEV tf infrastructure deployment"
     runs-on: ubuntu-latest
     timeout-minutes: 35
     defaults:
@@ -43,52 +35,45 @@ jobs:
 
     steps:
       - name: Checkout the repository to the runner
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
         uses: actions/checkout@v3
 
-      - name: configure aws credentials
-        if: github.ref_name == 'Test'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_DEV }} #change to reflect your IAM role’s ARN
-          aws-region: ${{ env.AWS_REGION }}
+      - name: Print Run info
+        run: |
+          echo "Github.ref = ${{ github.ref }}"
+          echo "Github.ref_name = ${{ github.ref_name }}"
+          echo "Github.event_name = ${{ github.event_name }}"
+          echo "Github.event = ${{join(github.event.*, '\n')}}"
            
       - name: configure aws credentials
-        if: github.ref_name == 'main'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            role-to-assume: ${{ env.AWS_ROLE_PROD }} #change to reflect your IAM role’s ARN
+            role-to-assume: ${{ env.AWS_ROLE_DEV }} #change to reflect your IAM role’s ARN
             aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform with specified version on the runner
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.6.1
       
       - name: Terraform init
         id: init
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
-        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY_MAIN" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
+        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
       
       - name: Terraform format
         id: fmt
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
         run: terraform fmt
       
       - name: Terraform validate
         id: validate
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
         run: terraform validate
 
       - name: Terraform plan
         id: plan
-        if: github.event_name == 'pull_request' && (github.ref_name == 'Test' || github.ref_name == 'main')
-        run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
+        run: terraform plan -no-color -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
         continue-on-error: true
       
       - name: Create Issue with TF plan
-        if: github.event_name == 'pull_request' && (github.ref_name == 'Test' || github.ref_name == 'main')
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
@@ -121,5 +106,9 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
-        if: (github.ref_name == 'Test' || github.ref_name == 'main') && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
+        if: github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
+
+      # Add to test if apply was successul - continue on error
+      # If Test=Succesfful: Add to create a PR with test results
+      # If Test=Unsuccessful: Add an issue with the results of the test

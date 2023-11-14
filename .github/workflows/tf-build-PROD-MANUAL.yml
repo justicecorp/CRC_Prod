@@ -1,0 +1,98 @@
+name: "MANUAL-PROD Terraform Build automated workflow"
+
+on: workflow_dispatch
+
+env: 
+  TF_LOG: INFO
+  TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET_PROD }}
+  TF_STATE_KEY: ${{ vars.TF_STATE_KEY_PROD }}
+  TF_STATE_DDBTABLE: ${{ vars.TF_STATE_DDBTABLE_PROD }}
+  TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+  AWS_REGION : us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
+  AWS_ROLE_PROD: ${{vars.AWS_ROLE_PROD}}
+  AWS_HOSTEDZONE_PROD: ${{vars.AWS_HOSTEDZONE_PROD}}
+  AWS_SITENAME: ${{ vars.AWS_SITENAME }}
+
+# Permission can be added at job level or workflow level    
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+jobs:
+  terraform:
+    name: "PROD tf infrastructure deployment"
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: bash
+        # We keep backend terraform files in the tf-be directory.
+        working-directory: ./tf-main
+
+    steps:
+      - name: Checkout the repository to the runner
+        uses: actions/checkout@v3
+           
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            role-to-assume: ${{ env.AWS_ROLE_PROD }} #change to reflect your IAM role’s ARN
+            aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform with specified version on the runner
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.1
+      
+      - name: Terraform init
+        id: init
+        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET" -backend-config="key=$TF_STATE_KEY" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE"
+      
+      - name: Terraform format
+        id: fmt
+        run: terraform fmt
+      
+      - name: Terraform validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform plan
+        id: plan
+        run: terraform plan -no-color -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
+        continue-on-error: true
+      
+      - name: Create Issue with TF plan
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
