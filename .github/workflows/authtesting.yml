@@ -2,16 +2,7 @@
 name: Test AWS authentication depending on the branch that runs it
 
 # Controls when the action will run. Invokes the workflow on push events but only for the main branch
-on: 
-  push: 
-    branches:
-    - main
-    - Test
-  pull_request:
-    branches:
-    - main
-    - Test
-  workflow_dispatch:
+on: workflow_dispatch
 
 env:
     AWS_REGION: us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter

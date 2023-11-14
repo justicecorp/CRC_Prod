@@ -1,4 +1,4 @@
-DDBTableName               = "VisitorCounterTableComb"
+DDBTableName               = "VisitorCounterTableCombChange"
 LambdaName                 = "SetVisitorCounterLambdaComb"
 DDBCountAttrName           = "COUNTERVALUECOMB"
 DDBHashKeyName             = "SITECOUNTERCOMB"
