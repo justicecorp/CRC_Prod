@@ -67,7 +67,9 @@ resource "aws_s3_object" "javascript" {
   content      = templatefile("${path.module}/../web-fe/index.js.tftpl", { APIGWURL = var.APIGWInvokeURL }) #@# HERE
   content_type = "text/javascript"
   depends_on   = [aws_s3_bucket_policy.bucket]
-
+  #@# Consider using the Source_hash or etag attribute which should notice any changes to the source content
+    ### If the Source_hash changes, it knows the soruce file has changed, and to reupload it
+  source_hash = filemd5("${path.module}/../web-fe/index.js.tftpl")
 }
 
 # Upload the HTML file to the bucket. Use the Templatefile() function to dynamically update the name of the JS File to import. 
@@ -78,6 +80,9 @@ resource "aws_s3_object" "html" {
   # How I learned I needed to set content type: https://stackoverflow.com/questions/18296875/amazon-s3-downloads-index-html-instead-of-serving
   content_type = "text/html"
   depends_on   = [aws_s3_bucket_policy.bucket]
+  #@# Consider using the Source_hash or etag attribute which should notice any changes to the source content
+    ### If the Source_hash changes, it knows the soruce file has changed, and to reupload it
+  source_hash = filemd5("${path.module}/../web-fe/index.html.tftpl")
 }
 
 # Configure the bucket for Static Hosting
