@@ -7,6 +7,7 @@ def lambda_handler(event, context):
     print(f"Log: {event}")
     print('Log: ## Context')
     print(f"Log: {context}")
+    print('Log: Changing the py file did result in TF updating the code in the Lambda FXN.')
 
     # Define global vars
     TABLENAME = os.environ['ddbtablename']
