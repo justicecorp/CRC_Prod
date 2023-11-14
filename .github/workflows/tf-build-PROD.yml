@@ -34,15 +34,15 @@ jobs:
         working-directory: ./tf-main
 
     steps:
+      - name: Checkout the repository to the runner
+        uses: actions/checkout@v3
+
       - name: Print Run info
         run: |
           echo "Github.ref = ${{ github.ref }}"
           echo "Github.ref_name = ${{ github.ref_name }}"
           echo "Github.event_name = ${{ github.event_name }}"
           echo "Github.event = ${{join(github.event.*, '\n')}}"
-
-      - name: Checkout the repository to the runner
-        uses: actions/checkout@v3
            
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
