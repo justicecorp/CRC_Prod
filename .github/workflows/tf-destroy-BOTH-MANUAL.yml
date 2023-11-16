@@ -62,8 +62,8 @@ jobs:
         id: initPROD
         if: github.ref_name == 'main'
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_PROD" -backend-config="key=$TF_STATE_KEY_PROD" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE_PROD"
-      
-      - name: Terraform Init PROD
+
+      - name: Terraform Init DEV
         id: initDEV
         if: github.ref_name == 'Test'
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_DEV" -backend-config="key=$TF_STATE_KEY_DEV" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE_DEV"
@@ -72,6 +72,11 @@ jobs:
         id: validate
         if: github.ref_name == 'Test' || github.ref_name == 'main'
         run: terraform validate
+
+      - name: Terraform State List
+        id: statelist
+        if: github.ref_name == 'Test' || github.ref_name == 'main'
+        run: terraform state list
 
       - name: Terraform Destory - with Retry
         id: destroy-retry
@@ -84,4 +89,10 @@ jobs:
           retry_wait_seconds: 30
           shell: bash
           command: terraform destroy -auto-approve
+
+      - name: Terraform Destroy - Normal 
+        id: destroy-normal
+        if: github.ref_name == 'Test' || github.ref_name == 'main'
+        run: terraform destroy -auto-approve
+
       
