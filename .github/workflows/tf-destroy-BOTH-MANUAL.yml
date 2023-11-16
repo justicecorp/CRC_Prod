@@ -16,6 +16,10 @@ env:
   AWS_REGION: us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
   AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
   AWS_ROLE_PROD: ${{vars.AWS_ROLE_PROD}}
+
+  AWS_HOSTEDZONE_PROD: ${{vars.AWS_HOSTEDZONE_PROD}}
+  AWS_HOSTEDZONE_DEV: ${{vars.AWS_HOSTEDZONE_DEV}}
+  AWS_SITENAME: ${{ vars.AWS_SITENAME }}
   
 # Permission can be added at job level or workflow level    
 permissions:
@@ -78,21 +82,14 @@ jobs:
         if: github.ref_name == 'Test' || github.ref_name == 'main'
         run: terraform state list
 
-      - name: Terraform Destory - with Retry
-        id: destroy-retry
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 2
-          retry_on: any
-          timeout_minutes: 30
-          retry_wait_seconds: 30
-          shell: bash
-          command: terraform destroy -auto-approve
+      - name: Terraform Destroy - Normal - DEV
+        id: destroy-normal-dev
+        if: github.ref_name == 'Test' 
+        run: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
+      
 
-      - name: Terraform Destroy - Normal 
-        id: destroy-normal
-        if: github.ref_name == 'Test' || github.ref_name == 'main'
-        run: terraform destroy -auto-approve
-
+      - name: Terraform Destroy - Normal - PROD
+        id: destroy-normal-prod
+        if: github.ref_name == 'main' 
+        run: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
       
