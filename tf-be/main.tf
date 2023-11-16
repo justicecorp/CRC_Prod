@@ -400,5 +400,10 @@ resource "aws_lambda_permission" "apigw_lambda" {
 resource "aws_wafv2_web_acl_association" "apigwwebacl" {
   resource_arn = aws_api_gateway_stage.lambdaAPI.arn
   web_acl_arn = aws_wafv2_web_acl.apigwwebacl.arn
+  depends_on = [ aws_api_gateway_stage.lambdaAPI, aws_wafv2_web_acl.apigwwebacl ]
+
+  timeouts {
+    create = "20m"
+  } 
 }
 
