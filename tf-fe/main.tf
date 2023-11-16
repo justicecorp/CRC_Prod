@@ -2,9 +2,9 @@ terraform {
   # specifies the required provider for this terraform module
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.21.0"
-      configuration_aliases = [ aws.east1 ]
+      source                = "hashicorp/aws"
+      version               = ">= 5.21.0"
+      configuration_aliases = [aws.east1]
     }
     random = {
       source  = "hashicorp/random"
@@ -68,7 +68,7 @@ resource "aws_s3_object" "javascript" {
   content_type = "text/javascript"
   depends_on   = [aws_s3_bucket_policy.bucket]
   #@# Consider using the Source_hash or etag attribute which should notice any changes to the source content
-    ### If the Source_hash changes, it knows the soruce file has changed, and to reupload it
+  ### If the Source_hash changes, it knows the soruce file has changed, and to reupload it
   source_hash = filemd5("${path.module}/../web-fe/index.js.tftpl")
 }
 
@@ -81,7 +81,7 @@ resource "aws_s3_object" "html" {
   content_type = "text/html"
   depends_on   = [aws_s3_bucket_policy.bucket]
   #@# Consider using the Source_hash or etag attribute which should notice any changes to the source content
-    ### If the Source_hash changes, it knows the soruce file has changed, and to reupload it
+  ### If the Source_hash changes, it knows the soruce file has changed, and to reupload it
   source_hash = filemd5("${path.module}/../web-fe/index.html.tftpl")
 }
 
@@ -134,9 +134,118 @@ resource "aws_acm_certificate_validation" "certificate" {
   validation_record_fqdns = [for record in aws_route53_record.certificate : record.fqdn]
 }
 
+# Web ACL: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl
+resource "aws_wafv2_web_acl" "cfwebacl" {
+  provider    = aws.east1
+  name        = "cfwebacl-${random_integer.s3suffix.id}"
+  description = "WebACL for CF distro - all AWS managed rules"
+  scope       = "CLOUDFRONT"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "managed-IPReputation-rule"
+    priority = 0
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "CF-WEBACL-IPREP-METRIC"
+      sampled_requests_enabled   = true
+    }
+    override_action {
+      none {}
+    }
+  }
+
+  rule {
+    name     = "managed-BotControl-rule"
+    priority = 1
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+        managed_rule_group_configs {
+          aws_managed_rules_bot_control_rule_set {
+            inspection_level = "COMMON"
+          }
+
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "CF-WEBACL-BOT-METRIC"
+      sampled_requests_enabled   = true
+    }
+    override_action {
+      none {}
+    }
+  }
+
+  rule {
+    name     = "managed-common-rule"
+    priority = 2
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "CF-WEBACL-COMMON-METRIC"
+      sampled_requests_enabled   = true
+    }
+    override_action {
+      none {}
+    }
+  }
+
+  rule {
+    name     = "ratebasedrule"
+    priority = 3
+
+    action {
+      block {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 500
+        aggregate_key_type = "IP"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "CF-WEBACL-RATE-METRIC"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "CF-WEBACL-METRIC"
+    sampled_requests_enabled   = true
+  }
+}
+
 resource "aws_cloudfront_distribution" "distro" {
   enabled = true
   aliases = ["${var.WebSiteHostName}.${var.HostedZone}"]
+  ## More info: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution
+  web_acl_id = aws_wafv2_web_acl.cfwebacl.arn
   origin {
     origin_id   = aws_s3_bucket_website_configuration.bucket.website_endpoint
     domain_name = aws_s3_bucket_website_configuration.bucket.website_endpoint
@@ -176,6 +285,8 @@ resource "aws_cloudfront_distribution" "distro" {
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
+
+  depends_on = [ aws_wafv2_web_acl.cfwebacl ]
 }
 
 resource "aws_route53_record" "resume1" {

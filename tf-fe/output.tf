@@ -13,3 +13,6 @@ output "cf-alt-domainname" {
 output "bucketpolicy" {
   value = data.aws_iam_policy_document.s3publicaccess.json
 }
+
+
+
