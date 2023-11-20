@@ -82,14 +82,29 @@ jobs:
         if: github.ref_name == 'Test' || github.ref_name == 'main'
         run: terraform state list
 
-      - name: Terraform Destroy - Normal - DEV
-        id: destroy-normal-dev
-        if: github.ref_name == 'Test' 
-        run: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
-      
+      - name: Terraform Destory - with Retry - Dev
+        id: destroy-retry-dev
+        if: github.ref_name == 'Test'
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 2
+          retry_on: any
+          timeout_minutes: 30
+          retry_wait_seconds: 30
+          shell: bash
+          command: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
 
-      - name: Terraform Destroy - Normal - PROD
-        id: destroy-normal-prod
-        if: github.ref_name == 'main' 
-        run: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
+
+      - name: Terraform Destory - with Retry - Dev
+        id: destroy-retry-prod
+        if: github.ref_name == 'main'
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 2
+          retry_on: any
+          timeout_minutes: 30
+          retry_wait_seconds: 30
+          shell: bash
+          command: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
+
       

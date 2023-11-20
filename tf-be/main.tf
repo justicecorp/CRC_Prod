@@ -206,10 +206,10 @@ resource "aws_iam_role_policy_attachment" "DDBPolicyAttachment" {
 # Create a Lambda function with a zip file as its source
 # Must use Environment Variables in my python script so it can remain static and work regardless of the naming conventions I use with DDB
 resource "aws_lambda_function" "sitecounterlambda" {
-  function_name    = var.LambdaName
-  role             = aws_iam_role.Lambda-DDBTable-Role.arn
-  filename         = data.archive_file.lambdaZip.output_path
-  handler          = var.LambdaHandler
+  function_name = var.LambdaName
+  role          = aws_iam_role.Lambda-DDBTable-Role.arn
+  filename      = data.archive_file.lambdaZip.output_path
+  handler       = var.LambdaHandler
   # This should take care of updating the lambda fxn if the archive file changes
   source_code_hash = data.archive_file.lambdaZip.output_base64sha256
   runtime          = var.LambdaRuntime
@@ -227,12 +227,97 @@ resource "aws_lambda_function" "sitecounterlambda" {
   depends_on = [aws_iam_role_policy_attachment.CWPolicyAttachment, aws_iam_role_policy_attachment.DDBPolicyAttachment]
 }
 
+## Web ACL: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl
+resource "aws_wafv2_web_acl" "apigwwebacl" {
+  name        = "APIGWwebacl"
+  description = "WebACL for APIGW - all AWS managed rules"
+  scope       = "REGIONAL"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "managed-IPReputation-rule"
+    priority = 0
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "APIGW-WEBACL-IPREP-METRIC"
+      sampled_requests_enabled   = true
+    }
+    override_action {
+      none {}
+    }
+  }
+
+  rule {
+    name     = "managed-BotControl-rule"
+    priority = 1
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+        managed_rule_group_configs {
+          aws_managed_rules_bot_control_rule_set {
+            inspection_level = "COMMON"
+          }
+
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "APIGW-WEBACL-BOT-METRIC"
+      sampled_requests_enabled   = true
+    }
+    override_action {
+      none {}
+    }
+  }
+
+  rule {
+    name     = "managed-common-rule"
+    priority = 2
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "APIGW-WEBACL-COMMON-METRIC"
+      sampled_requests_enabled   = true
+    }
+    override_action {
+      none {}
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "APIGW-WEBACL-METRIC"
+    sampled_requests_enabled   = true
+  }
+}
+
 # Create API Gateway with Lambda Proxy Integration enabled that will point to my lambda
 resource "aws_api_gateway_rest_api" "lambdaAPI" {
   name = var.APIGWName
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+  depends_on = [ aws_wafv2_web_acl.apigwwebacl ]
 }
 
 # Create the only API Gateway Method that will be needed - POST 
@@ -284,6 +369,23 @@ resource "aws_api_gateway_stage" "lambdaAPI" {
   stage_name    = "PROD"
 }
 
+resource "aws_api_gateway_method_settings" "all" {
+  rest_api_id = aws_api_gateway_rest_api.lambdaAPI.id
+  stage_name  = aws_api_gateway_stage.lambdaAPI.stage_name
+  method_path = "*/*"
+
+  # Set the rate and burst throttling limits to prevent too many requests. 
+  # The metric and log levels might be changed later
+  # Sources: https://beabetterdev.com/2021/10/01/aws-api-gateway-request-throttling/ & https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_method_settings
+  settings {
+    #metrics_enabled = true
+    #logging_level   = "ERROR"
+    throttling_burst_limit = 500
+    throttling_rate_limit  = 1000
+  }
+}
+
+
 # Create the Lambda policy that allows the API Gateway to call the Lambda
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
@@ -295,5 +397,13 @@ resource "aws_lambda_permission" "apigw_lambda" {
   source_arn = "${aws_api_gateway_rest_api.lambdaAPI.execution_arn}/*/${aws_api_gateway_method.method.http_method}/"
 }
 
+resource "aws_wafv2_web_acl_association" "apigwwebacl" {
+  resource_arn = aws_api_gateway_stage.lambdaAPI.arn
+  web_acl_arn = aws_wafv2_web_acl.apigwwebacl.arn
+  depends_on = [ aws_api_gateway_stage.lambdaAPI, aws_wafv2_web_acl.apigwwebacl ]
 
+  timeouts {
+    create = "20m"
+  } 
+}
 

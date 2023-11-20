@@ -26,5 +26,5 @@ variable "WebSiteHostName" {
 }
 
 variable "APIGWInvokeURL" {
-  type = string 
+  type = string
 }
