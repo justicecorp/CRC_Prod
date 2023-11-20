@@ -92,10 +92,15 @@ jobs:
           timeout_minutes: 30
           retry_wait_seconds: 30
           shell: bash
-          command: terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
+          command: |
+            echo "$PWD"
+            echo "I'm just trying to figure out what is going on here"
+            ls -a
+            echo "Just printed the contents of the current directory"
+            terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
 
 
-      - name: Terraform Destory - with Retry - Dev
+      - name: Terraform Destory - with Retry - Prod
         id: destroy-retry-prod
         if: github.ref_name == 'main'
         uses: nick-fields/retry@v2
