@@ -96,11 +96,7 @@ jobs:
           retry_wait_seconds: 30
           shell: bash
           command: |
-            echo "$PWD -> before cd tf-main"
             cd tf-main
-            echo "$PWD -> after cd tf-main"
-            ls -a
-            echo "Just printed the contents of the current directory"
             terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
 
 
