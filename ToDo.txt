@@ -1,5 +1,11 @@
 - Implement Signed GIT Commits
     - Installed GPG Suite, created a key, configured it at github, and the local git configuration for signing all local commits
+    - Sources:
+        - Github Tutorial on setting up commit signing: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification
+        - https://blog.hoangddt.net/configure-gpg-passphrase-so-you-dont-have-to-type-it-every-time-in-macos
+        - Must add things to your .zshrc/.bashrc files: https://www.gnupg.org/documentation/manuals/gnupg/Invoking-GPG_002dAGENT.html
+        - Add GPG Passphrase to macos keychain so you don't have to enter it at each commit: https://unixb0y.de/blog/articles/2019-01/gpg-password-macos-keychain
+        - Whats going on here
 - Add in cypress testing to the dev build workflow. It will simply check if a value exists for the counter for now. As the site is expanded it can do more testing. 
     - So long as the site is up and the counter is there, create a PR from Test->main in the workflow. 
     - Perform Cypress API testing. Add this as a step in tf-build-dev.yml
