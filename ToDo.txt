@@ -1,6 +1,6 @@
-- Implement Signed GIT Commits
-- Implement WAF/API Throttling in front of CF Distro/APIGW. Add this to IAC. 
-- Perform Cypress API testing. Add this as a step in tf-build-dev.yml
+- Add in cypress testing to the dev build workflow. It will simply check if a value exists for the counter for now. As the site is expanded it can do more testing. 
+    - So long as the site is up and the counter is there, create a PR from Test->main in the workflow. 
+    - Perform Cypress API testing. Add this as a step in tf-build-dev.yml
     - Afterwards, if all tests pass, add the creation of a PR from Test -> Prod in tf-build-dev.yml
-- Run the tf-destroy-BOTH-MANUAL.yml workflow to confirm deletions and retry logic works
-- Create some CloudWatch alarms that monitor APIGW, Lambda, etc. Add this to IAC.
+- Devise CloudWatch alarms that should be in place to monitor the environment. Monitor APIGW, Lambda, CF
+    - Eventually integrate these with an SNS topic. Integrate the SNS topic with a 3rd party notification service. 
