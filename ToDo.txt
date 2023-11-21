@@ -1,4 +1,5 @@
 - Implement Signed GIT Commits
+    - Installed GPG Suite, created a key, configured it at github, and the local git configuration for signing all local commits
 - Add in cypress testing to the dev build workflow. It will simply check if a value exists for the counter for now. As the site is expanded it can do more testing. 
     - So long as the site is up and the counter is there, create a PR from Test->main in the workflow. 
     - Perform Cypress API testing. Add this as a step in tf-build-dev.yml
