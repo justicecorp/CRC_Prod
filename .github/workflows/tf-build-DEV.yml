@@ -4,6 +4,13 @@ on:
   push: 
     branches:
     - Test
+    paths:
+    - '**.tf'
+    - '**.tfvars'
+    - 'web-be/lambda/SetVisitorCounter_Lambda.py'
+    - 'web-be/lambda.zip'
+    - '**.tftpl'
+    - '.github/workflows/tf-build-DEV.yml'
   workflow_dispatch:
 
 env: 
