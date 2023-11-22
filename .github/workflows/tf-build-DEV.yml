@@ -11,6 +11,7 @@ on:
     - 'web-be/lambda.zip'
     - '**.tftpl'
     - '.github/workflows/tf-build-DEV.yml'
+    - 'cypresstests/cypress/e2e/**'
   workflow_dispatch:
 
 env: 
@@ -139,7 +140,3 @@ jobs:
         run: gh issue create --title "Branch:Test - Cypress Testing Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-
-      # Add to test if apply was successul - continue on error
-      # If Test=Succesfful: Add to create a PR with test results
-      # If Test=Unsuccessful: Add an issue with the results of the test
