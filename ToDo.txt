@@ -26,3 +26,5 @@ Steps:
 
 Docs:
 - Setting up a cypress project: https://medium.com/nerd-for-tech/setting-up-cypress-193166f85b33
+- Workflow Permissions required to create PR: https://sjramblings.io/github-actions-resource-not-accessible-by-integration
+    - Additional Permissions that are needed: https://stackoverflow.com/questions/72376229/github-actions-is-not-permitted-to-create-or-approve-pull-requests-createpullre?newreg=6beaeb333db54f91b30e62bdb09d9099
