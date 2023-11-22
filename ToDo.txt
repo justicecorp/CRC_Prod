@@ -20,4 +20,9 @@ Troubleshooting Cypress:
 
 Steps:
 - figure out where the hell the package-lock.json file is meant to come from
+- FIGURE OUT HOW TO GENERATE PACKAGE.JSON. I THINK THIS MUST BE DONE FIRST. THEN FIGURE OUT HOW TO CREATE A PACKAGE-LOCK.JSON (it references package.json)
     
+
+
+Docs:
+- Setting up a cypress project: https://medium.com/nerd-for-tech/setting-up-cypress-193166f85b33
