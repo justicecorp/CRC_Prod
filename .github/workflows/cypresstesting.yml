@@ -23,7 +23,6 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          start: npm start
           working-directory: cypresstests
         env:
           CYPRESS_ghaurl: "https://${{env.AWS_SITENAME}}.${{env.AWS_HOSTEDZONE_DEV}}"
