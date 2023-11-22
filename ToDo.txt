@@ -16,6 +16,7 @@ Troubleshooting Cypress:
 - Thrown issue: Error: Action failed. Missing package manager lockfile. Expecting one of package-lock.json (npm), pnpm-lock.yaml (pnpm) or yarn.lock (yarn) in working-directory /home/runner/work/CRC_Prod/CRC_Prod
 - This is a good example of a folder structure: https://github.com/cypress-io/github-action#working-directory
     - This also shows that we can use the 'working-directory' attribute so we can keep our cypress stuff separate from other things
+- ***** THE PLACE WHERE I INSTALLED CYPRESS ON MY WORK LAPTOP (ie. ~/package-lock.json) HAS THE FILES. WHEN DO THEY GET GENERATED? HOW DO I GENERATE THEM IN MY PROIJECT????????
 
 Steps:
 - figure out where the hell the package-lock.json file is meant to come from
