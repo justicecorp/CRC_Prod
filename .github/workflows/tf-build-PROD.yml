@@ -28,6 +28,7 @@ env:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
+  issues: write
 
 jobs:
   terraform:
@@ -113,5 +114,12 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
+        id: apply
         if: github.event_name == 'push'
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
+
+      - name: Terraform Apply Failed - Creating an issue
+        if: steps.apply.outcome == 'failure'
+        run: gh issue create --title "Branch:main - Terraform Apply Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

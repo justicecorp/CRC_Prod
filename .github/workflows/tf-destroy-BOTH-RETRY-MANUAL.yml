@@ -25,6 +25,7 @@ env:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
+  issues: write
 
 jobs:
   terraform:
@@ -99,6 +100,11 @@ jobs:
             cd tf-main
             terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
 
+      - name: Terraform Destory Dev Failed - Creating an issue
+        if: steps.destroy-retry-dev.outcome == 'failure'
+        run: gh issue create --title "Branch:Test - Terraform Destroy Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Terraform Destory - with Retry - Prod
         id: destroy-retry-prod
@@ -113,5 +119,12 @@ jobs:
           command: |
             cd tf-main
             terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_PROD" -var "WebSiteHostName=$AWS_SITENAME"
+    
+     
+      - name: Terraform Destory Prod Failed - Creating an issue
+        if: steps.destroy-retry-dev.outcome == 'failure'
+        run: gh issue create --title "Branch:main - Terraform Destroy Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
       
