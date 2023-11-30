@@ -135,7 +135,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Testing Sailed - Creating an issue
+      - name: Testing Failed - Creating an issue
         if: steps.cypress.outcome != 'success'
         run: gh issue create --title "Branch:Test - Cypress Testing Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
         env:
