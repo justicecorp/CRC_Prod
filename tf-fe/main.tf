@@ -115,7 +115,7 @@ resource "aws_s3_bucket_website_configuration" "bucket" {
   error_document {
     key = local.errorhtmlname
   }
-  depends_on = [aws_s3_object.homehtml, aws_s3_object.resumehtml, aws_s3_object.bloghtml, aws_s3_object.javascript]
+  depends_on = [aws_s3_object.htmls, aws_s3_object.javascript]
 }
 
 # CERT MUST BE BUILT IN US-EAST-1 to use with CF
