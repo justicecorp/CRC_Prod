@@ -47,9 +47,14 @@
         p {
             line-height: 1.6;
         }
+        
+        #Counter {
+            text-align: center;
+        }
     </style>
+    <script src="${JAVASCRIPTPATH}"></script>
 </head>
-<body>
+<body onload="UpdateVisitorCounter()">
     <div class="navbar">
         <a href="home.html">Home</a>
         <a href="resume.html">Resume</a>
@@ -64,7 +69,10 @@
            Welcome to my blog. It's a little empty right now, but please come back later.
         </p>
 
-        <!-- Additional content for the home page goes here... -->
+        </br></br>
+        
+        <h4 id="Counter">Unique Visitor Count: <span id="CounterVal">0</span></h4>
     </div>
+   
 </body>
 </html>

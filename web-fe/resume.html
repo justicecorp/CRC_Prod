@@ -70,9 +70,14 @@
         .Date {
             float: right;
         }
+
+        #Counter {
+            text-align: center;
+        }
     </style>
+    <script src="${JAVASCRIPTPATH}"></script>
 </head>
-<body>
+<body onload="UpdateVisitorCounter()">
     <div class="navbar">
         <a href="home.html">Home</a>
         <a href="resume.html">Resume</a>
@@ -150,6 +155,8 @@
                 </li>
             </ul>
         </div>
+        </br></br>
+        <h4 id="Counter">Unique Visitor Count: <span id="CounterVal">0</span></h4>
     </div>
 </body>
 </html>
