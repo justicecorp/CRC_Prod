@@ -1,5 +1,6 @@
 async function UpdateVisitorCounter(){
-    const url = "https://ezx8h8j5pj.execute-api.us-east-2.amazonaws.com/PROD";
+    // CANNOT USE THE ${var} notation in this script. This is used by terraform for dynamic replacement.
+    const url = "${APIGWURL}";
     //const fetchPromise = fetch(url, {method: "POST", cache: "no-cache"});
     let myjso = await fetch(url, {method: "POST", cache: "no-cache"})
         .then(function(response) {

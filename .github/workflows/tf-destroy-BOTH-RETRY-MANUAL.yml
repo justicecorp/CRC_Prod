@@ -2,6 +2,7 @@ name: "MANUAL-RETRY-DESTROY Terraform Destroy automated workflow"
 
 on: workflow_dispatch
 
+
 env: 
   TF_LOG: INFO
   TF_STATE_BUCKET_PROD: ${{ vars.TF_STATE_BUCKET_PROD }}

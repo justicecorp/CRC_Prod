@@ -123,3 +123,25 @@ jobs:
         run: gh issue create --title "Branch:main - Terraform Apply Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Terraform Apply Success - Cypress run
+        id: cypress
+        if: steps.apply.outcome == 'success'
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: cypresstests
+        env:
+          CYPRESS_ghaurl: "https://${{env.AWS_SITENAME}}.${{env.AWS_HOSTEDZONE_PROD}}"
+
+      - name: Testing Failed - Creating an issue
+        if: steps.cypress.outcome != 'success'
+        run: gh issue create --title "Branch:main - Cypress Testing Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Testing Succeeded - deleting the dev environment
+        if: steps.cypress.outcome == 'success'
+        run: |
+          echo "I need to figure out how to delete my dev environment from here efficiently. I could create another workflow that I can call from this one that is purpose built for deleting the dev envmt."
+        
+      
