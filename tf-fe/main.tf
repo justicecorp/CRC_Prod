@@ -17,27 +17,27 @@ locals {
   resumehtmlname           = "resume_${var.WebCodeVersion}.html"
   homehtmlname             = "home_${var.WebCodeVersion}.html"
   bloghtmlname             = "blog_${var.WebCodeVersion}.html"
-  errorhtmlname             = "error_${var.WebCodeVersion}.html"
-  projectshtmlname          = "projects_${var.WebCodeVersion}.html"
+  errorhtmlname            = "error_${var.WebCodeVersion}.html"
+  projectshtmlname         = "projects_${var.WebCodeVersion}.html"
   contacthtmlname          = "contact_${var.WebCodeVersion}.html"
   jsname                   = "index_${var.WebCodeVersion}.js"
   cforiginid               = "myS3staticOrigin"
   cachingoptimizedpolicyid = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   cachingdisabledpolicyid  = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
   htmlmap = {
-    "blog.html" = local.bloghtmlname
-    "resume.html" = local.resumehtmlname
-    "home.html" = local.homehtmlname
+    "blog.html"     = local.bloghtmlname
+    "resume.html"   = local.resumehtmlname
+    "home.html"     = local.homehtmlname
     "projects.html" = local.projectshtmlname
-    "contact.html" = local.contacthtmlname
+    "contact.html"  = local.contacthtmlname
   }
   templatefilemap = {
     JAVASCRIPTPATH = local.jsname
-    BLOGPATH = local.bloghtmlname 
-    RESUMEPATH = local.resumehtmlname 
-    HOMEPATH = local.homehtmlname
-    PROJECTSPATH = local.projectshtmlname
-    CONTACTPATH = local.contacthtmlname
+    BLOGPATH       = local.bloghtmlname
+    RESUMEPATH     = local.resumehtmlname
+    HOMEPATH       = local.homehtmlname
+    PROJECTSPATH   = local.projectshtmlname
+    CONTACTPATH    = local.contacthtmlname
   }
 }
 
@@ -95,9 +95,9 @@ resource "aws_s3_object" "javascript" {
 # Upload all HTML files to the bucket. Use the Templatefile() function to dynamically update values in the HTML files.
 resource "aws_s3_object" "htmls" {
   for_each = local.htmlmap
-  key     = each.value
-  bucket  = aws_s3_bucket.bucket.id
-  content = templatefile("${path.module}/../web-fe/${each.key}", local.templatefilemap)
+  key      = each.value
+  bucket   = aws_s3_bucket.bucket.id
+  content  = templatefile("${path.module}/../web-fe/${each.key}", local.templatefilemap)
   # How I learned I needed to set content type: https://stackoverflow.com/questions/18296875/amazon-s3-downloads-index-html-instead-of-serving
   content_type = "text/html"
   depends_on   = [aws_s3_bucket_policy.bucket]

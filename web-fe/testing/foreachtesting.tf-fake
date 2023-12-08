@@ -8,20 +8,20 @@ locals {
   cachingoptimizedpolicyid = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   cachingdisabledpolicyid  = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
   htmlmap = {
-    "blog.html" = local.bloghtmlname
+    "blog.html"   = local.bloghtmlname
     "resume.html" = local.resumehtmlname
-    "home.html" = local.homehtmlname
+    "home.html"   = local.homehtmlname
   }
 }
 
 # Upload the Home HTML file to the bucket. Use the Templatefile() function to dynamically update the name of the JS File to import. 
 resource "aws_s3_object" "homehtml" {
-  key     = local.homehtmlname
-  bucket  = aws_s3_bucket.bucket.id
-  content = templatefile("${path.module}/../web-fe/home.html", { JAVASCRIPTPATH = local.jsname, BLOGPATH = local.bloghtmlname, RESUMEPATH = local.resumehtmlname, HOMEPATH = local.homehtmlname })
+  key          = local.homehtmlname
+  bucket       = aws_s3_bucket.bucket.id
+  content      = templatefile("${path.module}/../web-fe/home.html", { JAVASCRIPTPATH = local.jsname, BLOGPATH = local.bloghtmlname, RESUMEPATH = local.resumehtmlname, HOMEPATH = local.homehtmlname })
   content_type = "text/html"
   depends_on   = [aws_s3_bucket_policy.bucket]
-  source_hash = filemd5("${path.module}/../web-fe/home.html")
+  source_hash  = filemd5("${path.module}/../web-fe/home.html")
 }
 
 # Upload the Resume HTML file to the bucket. Use the Templatefile() function to dynamically update the name of the JS File to import. 
@@ -53,11 +53,11 @@ resource "aws_s3_object" "bloghtml" {
 
 
 resource "aws_s3_object" "htmls" {
-  for_each = local.htmlmap
-  key     = each.value
-  bucket  = aws_s3_bucket.bucket.id
-  content = templatefile("${path.module}/../web-fe/${each.key}", { JAVASCRIPTPATH = local.jsname, BLOGPATH = local.bloghtmlname, RESUMEPATH = local.resumehtmlname, HOMEPATH = local.homehtmlname })
+  for_each     = local.htmlmap
+  key          = each.value
+  bucket       = aws_s3_bucket.bucket.id
+  content      = templatefile("${path.module}/../web-fe/${each.key}", { JAVASCRIPTPATH = local.jsname, BLOGPATH = local.bloghtmlname, RESUMEPATH = local.resumehtmlname, HOMEPATH = local.homehtmlname })
   content_type = "text/html"
   depends_on   = [aws_s3_bucket_policy.bucket]
-  source_hash = filemd5("${path.module}/../web-fe/${each.key}")
+  source_hash  = filemd5("${path.module}/../web-fe/${each.key}")
 }
