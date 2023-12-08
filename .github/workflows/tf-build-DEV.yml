@@ -131,7 +131,12 @@ jobs:
 
       - name: Testing Succeeded - Creating a PR to merge to main
         if: steps.cypress.outcome == 'success'
-        run: gh pr create -B main -H Test --title "Automated PR - test env passed cypress tests" --body "PR created by GHA. The Test environment has been deployed and tested (with Cypress). Once this PR is manually approved, the infrastructure will be deployed to the Prod environment."
+        # If there is already a PR for Test to main, then this step will fail. That is fine because the point is to have a PR in general. Continue-on-error is a workaround to prevent this wf from failing
+        #@# Could do a 'gh pr list -B main -H Test' and if it already exists, run 'gh pr close <pr>' then run pr create, but this seems unecessary
+        #@# Could ignore the error, check if the error says "a pull request for branch "Test" into branch "main" already exists:". If so, then indicate step success, else, run exit 1. 
+        continue-on-error: true
+        run: gh pr create -B main -H Test --title "Automated PR - test env passed cypress tests_ID${{github.run_id}}" --body "PR created by GHA (ID${{github.run_id}}). The Test environment has been deployed and tested (with Cypress). Once this PR is manually approved, the infrastructure will be deployed to the Prod environment."
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
