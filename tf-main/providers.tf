@@ -25,10 +25,24 @@ terraform {
 provider "aws" {
   region = "us-west-1"
   #profile = "SSOAdminDev"
+  default_tags {
+   tags = {
+     Environment = var.HostedZone
+     Owner       = "TFProviders"
+     Project     = "CloudResumeChallenge"
+   }
+ }
 }
 
 provider "aws" {
   alias  = "east1"
   region = "us-east-1"
   #profile = "SSOAdminDev"
+  default_tags {
+   tags = {
+     Environment = var.HostedZone
+     Owner       = "TFProviders"
+     Project     = "CloudResumeChallenge"
+   }
+ }
 }
