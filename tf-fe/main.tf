@@ -14,7 +14,7 @@ terraform {
 }
 
 locals {
-  resumehtmlname                 = "resume_${var.WebCodeVersion}.html"
+  resumehtmlname           = "resume_${var.WebCodeVersion}.html"
   homehtmlname             = "home_${var.WebCodeVersion}.html"
   bloghtmlname             = "blog_${var.WebCodeVersion}.html"
   jsname                   = "index_${var.WebCodeVersion}.js"
@@ -314,7 +314,7 @@ resource "aws_cloudfront_distribution" "distro" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
 
-  depends_on = [ aws_wafv2_web_acl.cfwebacl ]
+  depends_on = [aws_wafv2_web_acl.cfwebacl]
 }
 
 resource "aws_route53_record" "resume1" {
