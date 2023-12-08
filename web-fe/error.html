@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alec Justice - Blog</title>
+    <title>Error - Alec Justice's Space</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,14 +47,15 @@
         p {
             line-height: 1.6;
         }
-        
-        #Counter {
-            text-align: center;
+
+        .error-message {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
         }
     </style>
-    <script src="${JAVASCRIPTPATH}"></script>
 </head>
-<body onload="UpdateVisitorCounter()">
+<body>
     <div class="navbar">
         <a href="${HOMEPATH}">Home</a>
         <a href="${RESUMEPATH}">Resume</a>
@@ -64,15 +65,14 @@
     </div>
 
     <div class="content">
-        <h1>Welcome to Alec Justice's Blog</h1>
-        <p>
-           Welcome to my blog. It's a little empty right now, but please come back later.
-        </p>
+        <h1>Oops! Something Went Wrong</h1>
+        <p class="error-message">Error 404: Page Not Found</p>
 
-        </br></br>
-        
-        <h4 id="Counter">Unique Visitor Count: <span id="CounterVal">0</span></h4>
+        <!-- Additional error content goes here... -->
+
+        <p>
+            Don't worry, Alec is on the case to fix this issue! Meanwhile, you can explore other parts of Alec's awesome space using the links above.
+        </p>
     </div>
-   
 </body>
 </html>
