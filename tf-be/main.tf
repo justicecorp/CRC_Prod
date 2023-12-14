@@ -88,7 +88,7 @@ resource "aws_iam_policy" "Lambda-DDBTable-DDBAccessPolicy" {
       "Version" : "2012-10-17",
       "Statement" : [
         {
-          "Sid"    : "ReadWriteSpecificDDBTable",
+          "Sid" : "ReadWriteSpecificDDBTable",
           "Action" : "dynamodb:*",
           "Effect" : "Allow",
           "Resource" : "${aws_dynamodb_table.sitecounterddbtable.arn}"

@@ -25,3 +25,16 @@ module "webapp-fe" {
     aws.east1 = aws.east1
   }
 }
+
+module "webapp-monitoring" {
+  source                = "../tf-monitor"
+  ZendutyServiceWebhook = var.ZendutyServiceWebhook
+  LambdaName            = var.LambdaName
+  CloudFrontID          = module.webapp-fe.cf-id
+  APIGWName             = var.APIGWName
+  providers = {
+    aws       = aws
+    aws.east1 = aws.east1
+  }
+  depends_on = [module.webapp-fe]
+}

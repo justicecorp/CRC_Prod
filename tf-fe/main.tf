@@ -322,9 +322,9 @@ resource "aws_route53_record" "resume1" {
 
 
 resource "aws_resourcegroups_group" "provider1" {
-    name = "CRC-region1"
-    resource_query {
-      query = <<JSON
+  name = "CRC-region1"
+  resource_query {
+    query = <<JSON
       {
         "ResourceTypeFilters": ["AWS::AllSupported"],
         "TagFilters": [
@@ -339,14 +339,14 @@ resource "aws_resourcegroups_group" "provider1" {
         ]
       }
       JSON
-    }
+  }
 }
 
 resource "aws_resourcegroups_group" "provider2" {
-    provider          = aws.east1
-    name = "CRC-region2"
-    resource_query {
-      query = <<JSON
+  provider = aws.east1
+  name     = "CRC-region2"
+  resource_query {
+    query = <<JSON
       {
         "ResourceTypeFilters": ["AWS::AllSupported"],
         "TagFilters": [
@@ -361,5 +361,5 @@ resource "aws_resourcegroups_group" "provider2" {
         ]
       }
       JSON
-    }
+  }
 }
