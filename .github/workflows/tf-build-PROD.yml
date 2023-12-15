@@ -112,5 +112,5 @@ jobs:
   deletedev:
     name: "PROD Delete Dev Deployment"
     needs: terraform
-    uses: ./.github/workflows/tf-destroy-DEV-workflow-call.yml@Test
+    uses: ./.github/workflows/tf-destroy-DEV-workflow-call.yml
     
