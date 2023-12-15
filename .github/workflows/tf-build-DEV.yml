@@ -81,41 +81,7 @@ jobs:
       - name: Terraform plan
         id: plan
         run: terraform plan -no-color -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME" -var "ZendutyServiceWebhook=$ZENDUTY_WEBHOOK"
-        continue-on-error: true
       
-      - name: Create Issue with TF plan
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-
-            <details><summary>Show Plan</summary>
-
-            \`\`\`\n
-            ${process.env.PLAN}
-            \`\`\`
-
-            </details>
-            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-
-      - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
-
       - name: Terraform Apply
         id: apply
         if: github.event_name == 'push'
@@ -132,12 +98,29 @@ jobs:
 
       - name: Testing Succeeded - Creating a PR to merge to main
         if: steps.cypress.outcome == 'success'
-        # If there is already a PR for Test to main, then this step will fail. That is fine because the point is to have a PR in general. Continue-on-error is a workaround to prevent this wf from failing
-        #@# Could do a 'gh pr list -B main -H Test' and if it already exists, run 'gh pr close <pr>' then run pr create, but this seems unecessary
-        #@# Could ignore the error, check if the error says "a pull request for branch "Test" into branch "main" already exists:". If so, then indicate step success, else, run exit 1. 
-        continue-on-error: true
-        run: gh pr create -B main -H Test --title "Automated PR - test env passed cypress tests_ID${{github.run_id}}" --body "PR created by GHA (ID${{github.run_id}}). The Test environment has been deployed and tested (with Cypress). Once this PR is manually approved, the infrastructure will be deployed to the Prod environment."
-
+        run: |
+          output=$(gh pr list --base main --head Test) 
+          if [[ -z "${output}" ]]; then 
+              echo "The 'gh pr list --base main --head Test' call returned an empty string - meaning there are no PRs. Now creating a new PR."
+              gh pr create -B main -H Test --title "Automated PR - test env passed cypress tests_ID${{github.run_id}}" --body "PR created by GHA (ID${{github.run_id}}). The Test environment has been deployed and tested (with Cypress). Once this PR is manually approved, the infrastructure will be deployed to the Prod environment."
+          else
+              echo "The 'gh pr list --base main --head Test' call returned a non-empty string meaning a PR already exists. Will delete this PR and create a new one so the PR reflects the GHA run that created it."
+              echo "This is the output of the pr list command: $output"
+          
+              prID=$(echo $output | awk '{print $1;}')
+              echo "This is the extracted PR ID: $prID"
+          
+              # validate if the PR ID contains only digits
+              if [[ $prID =~ ^[0-9]+$ ]]; then
+                  echo "Validated that the PRID contains only digits. Will now delete the PR and create a new one."
+                  gh pr close $prID --comment "Deleting and recreating this PR"
+                  echo "PR should have been closed but I am not sure how to capture the command's output to confirm. Will just assume its closed since we have other checks in place. Now creating the new PR." 
+                  gh pr create -B main -H Test --title "Automated PR - test env passed cypress tests_ID${{github.run_id}}" --body "PR created by GHA (ID${{github.run_id}}). The Test environment has been deployed and tested (with Cypress). Once this PR is manually approved, the infrastructure will be deployed to the Prod environment."
+              else
+                  echo "The PRID contained some non-digits. Will just leave things alone, but create an issue for this problem so it can be inspected."
+                  gh issue create --title "Failed to delete old Test->Main PR - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure. For some reason the extracted PR ID was non-numeric" --label "bug"
+              fi
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
