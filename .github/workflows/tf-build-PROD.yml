@@ -9,7 +9,8 @@ on:
     - '**.tfvars'
     - 'web-be/lambda/SetVisitorCounter_Lambda.py'
     - 'web-be/lambda.zip'
-    - '**.tftpl'
+    - 'web-fe/*.html'
+    - 'web-fe/*.js'
     - '.github/workflows/tf-build-PROD.yml'
   workflow_dispatch:
 
@@ -41,7 +42,6 @@ jobs:
         shell: bash
         # We keep backend terraform files in the tf-be directory.
         working-directory: ./tf-main
-
     steps:
       - name: Checkout the repository to the runner
         uses: actions/checkout@v3
@@ -102,11 +102,15 @@ jobs:
 
       - name: Testing Failed - Creating an issue
         if: steps.cypress.outcome != 'success'
-        run: gh issue create --title "Branch:main - Cypress Testing Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+        run: |
+          gh issue create --title "Branch:main - Cypress Testing Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+          exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
-      - name: Testing Succeeded - deleting the dev environment
-        id: deletedevworkflowcall
-        if: steps.cypress.outcome == 'success'
-        uses: ./.github/workflows/tf-destroy-DEV-workflow-call.yml@Test
+     
+  # need this job to run only if cypress testing was successful 
+  deletedev:
+    name: "PROD Delete Dev Deployment"
+    needs: terraform
+    uses: ./.github/workflows/tf-destroy-DEV-workflow-call.yml

@@ -9,9 +9,10 @@ on:
     - '**.tfvars'
     - 'web-be/lambda/SetVisitorCounter_Lambda.py'
     - 'web-be/lambda.zip'
-    - '**.tftpl'
     - '.github/workflows/tf-build-DEV.yml'
     - 'cypresstests/cypress/e2e/**'
+    - 'web-fe/*.html'
+    - 'web-fe/*.js'
   workflow_dispatch:
 
 env: 
