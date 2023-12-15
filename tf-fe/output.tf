@@ -14,5 +14,7 @@ output "bucketpolicy" {
   value = data.aws_iam_policy_document.s3publicaccess.json
 }
 
-
+output "cf-id" {
+  value = aws_cloudfront_distribution.distro.id
+}
 

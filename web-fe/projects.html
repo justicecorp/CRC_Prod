@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alec Justice - Projects</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        .navbar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .content {
+            width: 80%;
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        .project-list {
+            margin-top: 20px;
+        }
+
+        .project {
+            margin-bottom: 20px;
+        }
+
+        #Counter {
+            text-align: center;
+        }
+    </style>
+    <script src="${JAVASCRIPTPATH}"></script>
+</head>
+<body onload="UpdateVisitorCounter()">
+    <div class="navbar">
+        <a href="${HOMEPATH}">Home</a>
+        <a href="${RESUMEPATH}">Resume</a>
+        <a href="${BLOGPATH}">Blog</a>
+        <a href="${PROJECTSPATH}">Projects</a>
+        <a href="${CONTACTPATH}">Contact Me</a>
+    </div>
+
+    <div class="content">
+        <h1>Projects</h1>
+        <div class="project-list">
+            <div class="project">
+                <h3>Project 1</h3>
+                <p>
+                    Description of Project 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget lacus vel est ullamcorper sollicitudin.
+                </p>
+            </div>
+
+            <div class="project">
+                <h3>Project 2</h3>
+                <p>
+                    Description of Project 2. Integer rhoncus quam quis nisl convallis, a hendrerit metus volutpat. Nulla facilisi.
+                </p>
+            </div>
+
+            <!-- Add more projects as needed -->
+        </div>
+
+        <!-- Additional content for the Projects page goes here... -->
+
+        </br></br>
+        
+        <h4 id="Counter">Unique Visitor Count: <span id="CounterVal"></span></h4>
+    </div>
+</body>
+</html>
