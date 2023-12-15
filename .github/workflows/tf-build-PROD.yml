@@ -9,7 +9,8 @@ on:
     - '**.tfvars'
     - 'web-be/lambda/SetVisitorCounter_Lambda.py'
     - 'web-be/lambda.zip'
-    - '**.tftpl'
+    - 'web-fe/*.html'
+    - 'web-fe/*.js'
     - '.github/workflows/tf-build-PROD.yml'
   workflow_dispatch:
 
