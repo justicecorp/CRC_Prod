@@ -141,8 +141,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Testing Succeeded - deleting the dev environment
+        id: deletedevworkflowcall
         if: steps.cypress.outcome == 'success'
-        run: |
-          echo "I need to figure out how to delete my dev environment from here efficiently. I could create another workflow that I can call from this one that is purpose built for deleting the dev envmt."
-        
-      
+        uses: ./.github/workflows/tf-destroy-DEV-workflow-call.yml@Test

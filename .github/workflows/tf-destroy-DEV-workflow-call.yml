@@ -1,0 +1,99 @@
+name: "Terraform Destroy DEV - on [workflow_call]"
+
+on: workflow_call
+
+env: 
+  TF_LOG: INFO
+
+  TF_STATE_BUCKET_DEV: ${{ vars.TF_STATE_BUCKET_DEV }}
+  TF_STATE_KEY_DEV: ${{ vars.TF_STATE_KEY_DEV }}
+  TF_STATE_DDBTABLE_DEV: ${{ vars.TF_STATE_DDBTABLE_DEV }}
+
+  TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+  AWS_REGION: us-east-1 # This only dictates the default region for API and CLI commands, but region is always specified on a per command basis, so it doesn't matter
+  AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
+
+  AWS_HOSTEDZONE_DEV: ${{vars.AWS_HOSTEDZONE_DEV}}
+  AWS_SITENAME: ${{ vars.AWS_SITENAME }}
+
+  ZENDUTY_WEBHOOK_D: ${{ vars.ZENDUTY_CRC_DEV_WEBHOOK }}
+  
+# Permission can be added at job level or workflow level    
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+  issues: write
+
+jobs:
+  terraform:
+    name: "TF Infrastrcture Destroy BE and FE"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./tf-main
+        
+
+    steps:
+      - name: Checkout the repository to the runner
+        id: Called-checkout
+        uses: actions/checkout@v3
+
+      - name: Print Run info
+        id: Called-printruninfo
+        run: |
+          echo "Github.ref = ${{ github.ref }}"
+          echo "Github.ref_name = ${{ github.ref_name }}"
+          echo "Github.event_name = ${{ github.event_name }}"
+          echo "Github.event = ${{join(github.event.*, '\n')}}"
+          echo "Github.runid = ${{github.run_id}}"
+
+      - name: configure aws credentials DEV
+        id: Called-configDevCreds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_DEV }} 
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Setup Terraform with specified version on the runner
+        id: Called-setupterraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.1
+
+      - name: Terraform Init DEV
+        id: Called-initDEV
+        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_DEV" -backend-config="key=$TF_STATE_KEY_DEV" -backend-config="region=$TF_STATE_REGION" -backend-config="dynamodb_table=$TF_STATE_DDBTABLE_DEV"
+
+      - name: Terraform Validate
+        id: Called-tfvalidate
+        run: terraform validate
+
+      - name: Terraform State List
+        id: Called-statelist
+        run: terraform state list
+
+        # The Retry action DOES NOT use the defined working directory for the Workflow
+        # PWD of Retry Action is:  /home/runner/work/CRC_Prod/CRC_Prod
+        # Contents of CRC_Prod folder is just the contents of the local repo here. So to reference anything in the TF-Main folder you must do: ./tf-main/<filename>
+      - name: Terraform Destory - with Retry - Dev
+        id: Called-destroyretrydev
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 2
+          retry_on: any
+          timeout_minutes: 30
+          retry_wait_seconds: 30
+          shell: bash
+          command: |
+            cd tf-main
+            terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME" -var "ZendutyServiceWebhook=$ZENDUTY_WEBHOOK_D
+
+      - name: Terraform Destory Dev Failed - Creating an issue
+        id: Called-createdevissue
+        if: steps.Called-destroyretrydev.outcome == 'failure'
+        run: gh issue create --title "Called (workflow_call) - Terraform Destroy Failed - Run=${{github.run_id}}" --body "Please see workflow run given by ${{github.run_id}} for information about the failure" --label "bug"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      
