@@ -65,7 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "APIGWRPS" {
   evaluation_periods        = "1"
   metric_name               = "Count"
   namespace                 = "AWS/ApiGateway"
-  period                    = 10
+  period                    = 600
   statistic                 = "SampleCount"
   threshold                 = 200
   alarm_actions             = [aws_sns_topic.topic1.arn]
@@ -84,11 +84,11 @@ resource "aws_cloudwatch_metric_alarm" "CFErrorRate" {
   evaluation_periods        = "1"
   metric_name               = "TotalErrorRate"
   namespace                 = "AWS/CloudFront"
-  period                    = 10
+  period                    = 600
   statistic                 = "Average"
   threshold                 = 2
   alarm_actions             = [aws_sns_topic.topic2.arn]
-  alarm_description         = "Alarm for monitoring if the CF Distro returns more than 4 errors (4XX/5XX) in 10 minutes."
+  alarm_description         = "Alarm for monitoring if the CF Distro returns more than 2 errors (4XX/5XX) in 10 minutes."
   ok_actions                = [aws_sns_topic.topic2.arn]
   insufficient_data_actions = [aws_sns_topic.topic2.arn]
   dimensions = {
@@ -103,7 +103,7 @@ resource "aws_cloudwatch_metric_alarm" "LambdaFailures" {
   evaluation_periods        = "1"
   metric_name               = "Errors"
   namespace                 = "AWS/Lambda"
-  period                    = 60
+  period                    = 3600
   statistic                 = "Sum"
   threshold                 = 3
   alarm_actions             = [aws_sns_topic.topic1.arn]
