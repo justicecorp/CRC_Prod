@@ -26,12 +26,12 @@ provider "aws" {
   region = "us-west-1"
   #profile = "SSOAdminDev"
   default_tags {
-   tags = {
-     Environment = var.HostedZone
-     Owner       = "TFProviders"
-     Project     = "CloudResumeChallenge"
-   }
- }
+    tags = {
+      Environment = var.HostedZone
+      Owner       = "TFProviders"
+      Project     = "CloudResumeChallenge"
+    }
+  }
 }
 
 provider "aws" {
@@ -39,10 +39,10 @@ provider "aws" {
   region = "us-east-1"
   #profile = "SSOAdminDev"
   default_tags {
-   tags = {
-     Environment = var.HostedZone
-     Owner       = "TFProviders"
-     Project     = "CloudResumeChallenge"
-   }
- }
+    tags = {
+      Environment = var.HostedZone
+      Owner       = "TFProviders"
+      Project     = "CloudResumeChallenge"
+    }
+  }
 }

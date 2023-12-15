@@ -24,6 +24,7 @@ env:
   AWS_ROLE_DEV: ${{vars.AWS_ROLE_DEV}}
   AWS_HOSTEDZONE_DEV: ${{vars.AWS_HOSTEDZONE_DEV}}
   AWS_SITENAME: ${{ vars.AWS_SITENAME }}
+  ZENDUTY_WEBHOOK: ${{ vars.ZENDUTY_CRC_DEV_WEBHOOK }}
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -79,7 +80,7 @@ jobs:
 
       - name: Terraform plan
         id: plan
-        run: terraform plan -no-color -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
+        run: terraform plan -no-color -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME" -var "ZendutyServiceWebhook=$ZENDUTY_WEBHOOK"
         continue-on-error: true
       
       - name: Create Issue with TF plan
@@ -118,7 +119,7 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME"
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME" -var "ZendutyServiceWebhook=$ZENDUTY_WEBHOOK"
 
       - name: Cypress run
         id: cypress

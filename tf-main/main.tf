@@ -25,3 +25,18 @@ module "webapp-fe" {
     aws.east1 = aws.east1
   }
 }
+
+module "webapp-monitoring" {
+  source                = "../tf-monitor"
+  ZendutyServiceWebhook = var.ZendutyServiceWebhook
+  # Should maybe use output from the BE module here to establish an implicit dependeny
+  LambdaName            = var.LambdaName
+  CloudFrontID          = module.webapp-fe.cf-id
+  # Should maybe use output from the BE module here to establish an implicit dependeny
+  APIGWName             = var.APIGWName
+  providers = {
+    aws       = aws
+    aws.east1 = aws.east1
+  }
+  depends_on = [module.webapp-fe, module.webapp-be]
+}
