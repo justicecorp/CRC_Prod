@@ -15,7 +15,7 @@ module "webapp-be" {
 
 module "webapp-fe" {
   source          = "../tf-fe"
-  BucketName      = var.BucketName
+  BucketName      = "${var.WebSiteHostName}.${var.HostedZone}"
   WebCodeVersion  = var.WebCodeVersion
   HostedZone      = var.HostedZone
   WebSiteHostName = var.WebSiteHostName

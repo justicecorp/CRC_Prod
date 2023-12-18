@@ -49,8 +49,8 @@ resource "random_password" "refererstring" {
 }
 
 resource "random_integer" "s3suffix" {
-  min = 3
-  max = 6
+  min = 99
+  max = 9999
 }
 
 
