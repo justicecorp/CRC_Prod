@@ -30,6 +30,7 @@ locals {
     "home.html"     = local.homehtmlname
     "projects.html" = local.projectshtmlname
     "contact.html"  = local.contacthtmlname
+    "error.html"    = local.errorhtmlname
   }
   templatefilemap = {
     JAVASCRIPTPATH = local.jsname
@@ -104,6 +105,7 @@ resource "aws_s3_object" "htmls" {
   # If the Source_hash changes, it knows the soruce file has changed, and to reupload it
   source_hash = filemd5("${path.module}/../web-fe/${each.key}")
 }
+
 
 
 # Configure the bucket for Static Hosting
