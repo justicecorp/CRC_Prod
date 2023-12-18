@@ -12,6 +12,7 @@ on:
     - 'web-fe/*.html'
     - 'web-fe/*.js'
     - '.github/workflows/tf-build-PROD.yml'
+    - '.github/workflows/tf-destroy-DEV-workflow-call.yml'
   workflow_dispatch:
 
 env: 
@@ -113,4 +114,5 @@ jobs:
   deletedev:
     name: "PROD Delete Dev Deployment"
     needs: terraform
-    uses: justicecorp/CRC_Prod/.github/workflows/tf-destroy-DEV-workflow-call.yml@Test
+    uses: ./.github/workflows/tf-destroy-DEV-workflow-call.yml
+    #uses: justicecorp/CRC_Prod/.github/workflows/tf-destroy-DEV-workflow-call.yml@Test

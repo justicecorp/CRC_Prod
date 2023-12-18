@@ -10,6 +10,8 @@ on:
     - 'web-be/lambda/SetVisitorCounter_Lambda.py'
     - 'web-be/lambda.zip'
     - '.github/workflows/tf-build-DEV.yml'
+    - '.github/workflows/tf-build-PROD.yml'
+    - '.github/workflows/tf-destroy-DEV-workflow-call.yml'
     - 'cypresstests/cypress/e2e/**'
     - 'web-fe/*.html'
     - 'web-fe/*.js'
