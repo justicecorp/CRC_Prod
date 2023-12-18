@@ -62,7 +62,7 @@ resource "aws_s3_bucket" "bucket" {
 }
 
 resource "aws_s3_bucket" "logging" {
-  bucket_prefix = "${aws_s3_bucket.bucket.id}-logging"
+  bucket = "${aws_s3_bucket.bucket.id}-log"
   depends_on    = [aws_s3_bucket.bucket]
 }
 
