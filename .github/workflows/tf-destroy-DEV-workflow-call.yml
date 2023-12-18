@@ -88,7 +88,7 @@ jobs:
           shell: bash
           command: |
             cd tf-main
-            terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME" -var "ZendutyServiceWebhook=$ZENDUTY_WEBHOOK_D
+            terraform destroy -auto-approve -input=false -var-file="terraform.tfvars" -var "HostedZone=$AWS_HOSTEDZONE_DEV" -var "WebSiteHostName=$AWS_SITENAME" -var "ZendutyServiceWebhook=$ZENDUTY_WEBHOOK_D"
 
       - name: Terraform Destory Dev Failed - Creating an issue
         id: Called-createdevissue
