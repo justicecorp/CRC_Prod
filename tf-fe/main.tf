@@ -134,6 +134,19 @@ resource "aws_s3_object" "htmls" {
   source_hash = filemd5("${path.module}/../web-fe/${each.key}")
 }
 
+# Upload favicon.ico file to the bucket. 
+resource "aws_s3_object" "favicon" {
+  key      = "favicon.ico"
+  bucket   = aws_s3_bucket.bucket.id
+  source  = "${path.module}/../web-fe/favicon.ico"
+  # How I learned I needed to set content type: https://stackoverflow.com/questions/18296875/amazon-s3-downloads-index-html-instead-of-serving
+  content_type = "image/x-icon"
+  depends_on   = [aws_s3_bucket_policy.bucket]
+  # If the Source_hash changes, it knows the soruce file has changed, and to reupload it
+  source_hash = filemd5("${path.module}/../web-fe/favicon.ico")
+}
+
+
 
 # Configure the bucket for Static Hosting
 resource "aws_s3_bucket_website_configuration" "bucket" {
