@@ -86,7 +86,7 @@ resource "aws_cloudwatch_metric_alarm" "CFErrorRate" {
   namespace                 = "AWS/CloudFront"
   period                    = 600
   statistic                 = "Average"
-  threshold                 = 2
+  threshold                 = 80
   alarm_actions             = [aws_sns_topic.topic2.arn]
   alarm_description         = "Alarm for monitoring if the CF Distro returns more than 2 errors (4XX/5XX) in 10 minutes."
   ok_actions                = [aws_sns_topic.topic2.arn]
