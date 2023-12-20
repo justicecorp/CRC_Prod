@@ -58,9 +58,25 @@ resource "random_integer" "s3suffix" {
 # All the depends_on statements below ultimately fixed my issue of not being able to create a bucket policy. It was trying to create it before the bucket was created
 # Create the S3 bucket that will host the static site
 resource "aws_s3_bucket" "bucket" {
-  bucket = "${var.BucketName}-${random_integer.s3suffix.id}"
-  tags = {
-    Name = "${var.BucketName}-${random_integer.s3suffix.id}"
+  bucket_prefix = "${var.BucketName}-"
+}
+
+resource "aws_s3_bucket" "logging" {
+  bucket = "${aws_s3_bucket.bucket.id}-log"
+  depends_on    = [aws_s3_bucket.bucket]
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "logexpire" {
+  bucket = aws_s3_bucket.logging.id
+
+  rule {
+    id = "expire5days"
+    filter {}
+    expiration {
+      days = 5
+    }
+    status = "Enabled"
   }
 }
 
@@ -79,6 +95,19 @@ resource "aws_s3_bucket_policy" "bucket" {
   bucket     = aws_s3_bucket.bucket.id
   policy     = data.aws_iam_policy_document.s3publicaccess.json
   depends_on = [aws_s3_bucket_public_access_block.bucket]
+}
+
+resource "aws_s3_bucket_policy" "logging" {
+  bucket     = aws_s3_bucket.logging.id
+  policy     = data.aws_iam_policy_document.s3accesslogging.json
+  depends_on = [aws_s3_bucket.logging]
+}
+
+resource "aws_s3_bucket_logging" "logging" {
+  bucket        = aws_s3_bucket.bucket.id
+  target_bucket = aws_s3_bucket.logging.id
+  target_prefix = "log/"
+  depends_on    = [aws_s3_bucket_policy.bucket]
 }
 
 # Upload the JS file to the bucket. Use the Templatefile() function to dynamically update the address of the APIGW in the file.
@@ -104,6 +133,18 @@ resource "aws_s3_object" "htmls" {
   depends_on   = [aws_s3_bucket_policy.bucket]
   # If the Source_hash changes, it knows the soruce file has changed, and to reupload it
   source_hash = filemd5("${path.module}/../web-fe/${each.key}")
+}
+
+# Upload favicon.ico file to the bucket. 
+resource "aws_s3_object" "favicon" {
+  key      = "favicon.ico"
+  bucket   = aws_s3_bucket.bucket.id
+  source  = "${path.module}/../web-fe/favicon.ico"
+  # How I learned I needed to set content type: https://stackoverflow.com/questions/18296875/amazon-s3-downloads-index-html-instead-of-serving
+  content_type = "image/x-icon"
+  depends_on   = [aws_s3_bucket_policy.bucket]
+  # If the Source_hash changes, it knows the soruce file has changed, and to reupload it
+  source_hash = filemd5("${path.module}/../web-fe/favicon.ico")
 }
 
 
