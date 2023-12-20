@@ -64,6 +64,7 @@ resource "aws_s3_bucket" "bucket" {
 resource "aws_s3_bucket" "logging" {
   bucket = "${aws_s3_bucket.bucket.id}-log"
   depends_on    = [aws_s3_bucket.bucket]
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "logexpire" {
