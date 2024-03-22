@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Git clone the repository
         if: github.ref_name == 'Test' || github.ref_name == 'main'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
 
       - name: configure aws credentials

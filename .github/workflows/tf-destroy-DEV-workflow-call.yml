@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Checkout the repository to the runner
         id: Called-checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Print Run info
         id: Called-printruninfo
@@ -58,7 +58,7 @@ jobs:
           
       - name: Setup Terraform with specified version on the runner
         id: Called-setupterraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.1
 
@@ -79,7 +79,7 @@ jobs:
         # Contents of CRC_Prod folder is just the contents of the local repo here. So to reference anything in the TF-Main folder you must do: ./tf-main/<filename>
       - name: Terraform Destory - with Retry - Dev
         id: Called-destroyretrydev
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: 2
           retry_on: any

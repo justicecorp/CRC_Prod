@@ -45,7 +45,7 @@ jobs:
     steps:
       - name: Checkout the repository to the runner
         if: github.ref_name == 'Test' || github.ref_name == 'main'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: configure aws credentials DEV
         if: github.ref_name == 'Test'
@@ -63,7 +63,7 @@ jobs:
           
       - name: Setup Terraform with specified version on the runner
         if: github.ref_name == 'Test' || github.ref_name == 'main'
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.1
 
@@ -93,7 +93,7 @@ jobs:
       - name: Terraform Destory - with Retry - Dev
         id: destroy-retry-dev
         if: github.ref_name == 'Test'
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: 2
           retry_on: any
@@ -113,7 +113,7 @@ jobs:
       - name: Terraform Destory - with Retry - Prod
         id: destroy-retry-prod
         if: github.ref_name == 'main'
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: 2
           retry_on: any

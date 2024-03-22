@@ -45,7 +45,7 @@ jobs:
         working-directory: ./tf-main
     steps:
       - name: Checkout the repository to the runner
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Print Run info
         run: |
@@ -61,7 +61,7 @@ jobs:
             aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform with specified version on the runner
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.1
       
