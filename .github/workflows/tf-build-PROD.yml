@@ -27,7 +27,7 @@ env:
   AWS_SITENAME: ${{ vars.AWS_SITENAME }}
   ZENDUTY_WEBHOOK: ${{ vars.ZENDUTY_CRC_PROD_WEBHOOK }}
 
-# Permission can be added at job level or workflow level    
+# Permission can be added at job level or workflow level - extra comment to trigger workflow 
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
